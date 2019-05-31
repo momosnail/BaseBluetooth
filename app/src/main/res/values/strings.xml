@@ -1,3 +1,71 @@
-<resources>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
     <string name="app_name">BaseBluetooth</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+
+
+    <!-- Message for the error dialog when BT pairing fails because the PIN /
+       Passkey entered is incorrect. 由于PIN / BT配对失败，错误对话框的消息
+       输入的密钥不正确。-->
+    <string name="bluetooth_pairing_pin_error_message">There was a problem pairing with <xliff:g id="device_name">%1$s</xliff:g> because the PIN or Passkey is incorrect.</string>
+    <!-- Message for the error dialog when BT pairing fails because the other device rejected the pairing. 配对消息失败因为 其他设备拒绝-->
+    <string name="bluetooth_pairing_rejected_error_message">Pairing rejected by <xliff:g id="device_name">%1$s</xliff:g>.</string>
+    <!-- Message for the error dialog when BT pairing fails because the other device is down.设备配对失败 其他设备下线 -->
+    <string name="bluetooth_pairing_device_down_error_message">Cannot establish communication with <xliff:g id="device_name">%1$s</xliff:g>.</string>
+    <!-- Message for the error dialog when BT pairing fails generically. 配对失败一般错误小时-->
+    <string name="bluetooth_pairing_error_message">There was a problem pairing with <xliff:g id="device_name">%1$s</xliff:g>.</string>
+
+    <!-- Bluetooth settings.  The user-visible string that is used whenever referring to the PBAP profile. -->
+    <string name="bluetooth_profile_pbap">共享联系人</string>
+
+    <!-- Bluetooth settings.  The user-visible string that is used whenever referring to the headset or handsfree profile. -->
+    <string name="bluetooth_profile_headset">手机</string>
+    <!-- Bluetooth settings.  The user-visible string that is used whenever referring to the A2DP profile. -->
+    <string name="bluetooth_profile_a2dp">媒体</string>
+    <string name="bluetooth_profile_headset_client">对端手机</string>
+    <!-- Bluetooth settings.  The user-visible string that is used whenever referring to the A2DP profile. -->
+    <string name="bluetooth_profile_a2dp_sink">对端媒体</string>
+    <!-- Bluetooth settings.  Connection options screen.  The summary for the headset checkbox preference that describes how checking it will set the headset profile as preferred. -->
+    <string name="bluetooth_headset_profile_summary_use_for">Use for phone audio</string>
+    <!-- Bluetooth settings.  Connection options screen.  The summary for the A2DP checkbox preference that describes how checking it will set the A2DP profile as preferred. -->
+    <string name="bluetooth_a2dp_profile_summary_use_for">Use for media audio</string>
+    <string name="bluetooth_a2dp_sink_profile_summary_use_for">Use for meida audio sink</string>
+    <!-- Bluetooth settings.  Connection options screen.  The summary for the headset checkbox preference when headset is connected. -->
+    <string name="bluetooth_headset_profile_summary_connected">Connected to phone audio</string>
+    <!-- Bluetooth settings.  Connection options screen.  The summary for the A2DP checkbox preference when A2DP is connected. -->
+    <string name="bluetooth_a2dp_profile_summary_connected">Connected to media audio</string>
+    <string name="bluetooth_a2dp_sink_profile_summary_connected">Connected to media audio sink</string>
+
+    <string name="bt_status_unpair">未配对</string>
+    <string name="bt_status_paired">已配对</string>
+    <string name="bt_status_connected">已连接</string>
+
+    <string name="pbap_connect_alert">联系人连接</string>
+    <string name="pbap_connect_alert_message">您需要获取联系人信息吗 ?</string>
+    <string name="bluetooth_disconnect_confirm_prompt">您当前连接 %1$s</string>
+    <string name="role_change_cancel">Confirm role switch timeout, cancle the connect request</string>
+    <string name="bluetooth_disconnect_prompt">您当前连接 %1$s 将会被断开.\是否继续?</string>
+
+    <string name="ok">确认</string>
+    <string name="cancel">取消</string>
+
+    <string name="auth_ok">确认</string>
+    <string name="auth_cancel">取消</string>
+
+    <string name="bluetooth_error_title">注意</string>
+
+    <!-- Message for the error dialog when BT connecting operation fails generically. -->
+    <string name="bluetooth_connecting_error_message">There was a problem connecting to <xliff:g id="device_name">%1$s</xliff:g>.</string>
+
+    <!-- Bluetooth settings.  Message when cnonected to a device -->
+    <string name="bluetooth_connected">已连接</string>
+    <!-- Bluetooth settings.  Message when a device is disconnected -->
+    <string name="bluetooth_disconnected">已断开连接</string>
+    <!-- Bluetooth settings.  Message when disconnecting from a device -->
+    <string name="bluetooth_disconnecting">正在断开连接\u2026</string>
+    <!-- Bluetooth settings.  Message when connecting to a device -->
+    <string name="bluetooth_connecting">正在连接\u2026</string>
+    <!-- Bluetooth settings.  Message when the device state is unknown -->
 </resources>

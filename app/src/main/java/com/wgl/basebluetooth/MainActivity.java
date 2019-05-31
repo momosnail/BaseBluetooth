@@ -1,12 +1,13 @@
 package com.wgl.basebluetooth;
 
+
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.widget.CompoundButton;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     private SwitchCompat mSwitchBluetooth;
 
@@ -19,11 +20,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initData() {
+
         mSwitchBluetooth.setOnCheckedChangeListener(mOnCheckedChangeListener);
     }
 
     private void initView() {
-        mSwitchBluetooth = findViewById(R.id.switch_bluetooth);
+        mSwitchBluetooth = (SwitchCompat) findViewById(R.id.switch_bluetooth);
+
     }
 
     CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
