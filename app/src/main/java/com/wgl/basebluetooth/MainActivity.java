@@ -33,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "onCheckedChanged: "+isChecked );
             } else {
                 Log.e(TAG, "onCheckedChanged: "+isChecked );
-                Log.e(TAG, "onCheckedChanged: "+isChecked );
 
             }
 
