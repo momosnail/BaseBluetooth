@@ -6,15 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/color_bluetooth_bg"
-
     tools:context=".MainActivity">
-    <!-- android:background="@drawable/bt_background"-->
-
-    <!--  android:background="@drawable/btn_180_50_bg"-->
-
-
-
-
+    
     <android.support.v7.widget.SwitchCompat
         android:id="@+id/switch_bluetooth"
         android:layout_width="match_parent"
@@ -22,16 +15,16 @@
         android:layout_alignParentRight="true"
         android:layout_marginLeft="56dp"
         android:layout_marginRight="56dp"
-        android:paddingTop="8dp"
         android:background="@drawable/switch_bg"
         android:checked="false"
         android:orientation="horizontal"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp"
         android:scrollbarThumbHorizontal="@color/colorPrimary"
         android:shadowColor="@color/colorAccent"
         android:text="蓝牙开关"
         android:textColor="@color/white"
         android:textSize="18dp"
-        android:paddingBottom="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
@@ -42,10 +35,8 @@
         android:layout_marginLeft="56dp"
         android:layout_marginRight="56dp"
         android:background="@color/white"
-        app:layout_constraintTop_toBottomOf="@id/switch_bluetooth"
-        app:layout_constraintLeft_toRightOf="parent"/>
-
-
+        app:layout_constraintLeft_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/switch_bluetooth"/>
 
 
     <android.support.v7.widget.SwitchCompat
@@ -55,12 +46,12 @@
         android:layout_alignParentRight="true"
         android:layout_marginLeft="56dp"
         android:layout_marginRight="56dp"
-        android:paddingTop="8dp"
         android:background="@drawable/switch_bg"
         android:checked="true"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp"
         android:text="扫        描"
         android:textColor="@color/white"
-        android:paddingBottom="8dp"
         android:textSize="18dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/switch_bluetooth"/>
@@ -72,8 +63,8 @@
         android:layout_marginLeft="56dp"
         android:layout_marginRight="56dp"
         android:background="@color/white"
-        app:layout_constraintTop_toBottomOf="@id/switch_bluetooth_san"
-        app:layout_constraintLeft_toRightOf="parent"/>
+        app:layout_constraintLeft_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/switch_bluetooth_san"/>
 
     <TextView
         android:id="@+id/tv_device_list"
@@ -94,6 +85,8 @@
         android:layout_marginLeft="56dp"
         android:layout_marginRight="56dp"
         android:layout_marginTop="16dp"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_device_list"/>
 
