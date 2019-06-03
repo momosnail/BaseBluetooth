@@ -10,10 +10,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
+import android.view.View;
 import android.widget.CompoundButton;
 
+import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.mediatek.bluetooth.BluetoothProfileManager;
+import com.wgl.basebluetooth.Adapter.CachedDevicesAdapter;
 import com.wgl.basebluetooth.common.BluetoothCallback;
 import com.wgl.basebluetooth.common.CachedBluetoothDevice;
 import com.wgl.basebluetooth.common.LocalBluetoothAdapter;
@@ -26,7 +31,7 @@ import java.util.List;
 
 import timber.log.Timber;
 
-public class MainActivity extends Activity implements BluetoothCallback {
+public class MainActivity extends Activity implements BluetoothCallback, BaseQuickAdapter.OnItemClickListener {
     private SwitchCompat mSwitchBluetooth;
 
     private Context mContext;
@@ -63,6 +68,8 @@ public class MainActivity extends Activity implements BluetoothCallback {
 
         }
     };
+    private RecyclerView mRecyclerView;
+    private CachedDevicesAdapter mCachedDevicesAdapter;
 
     private void receiverInit() {
         mIntentFilter = new IntentFilter();
@@ -115,15 +122,27 @@ public class MainActivity extends Activity implements BluetoothCallback {
 
 
         }
+        initRecyclerView();
+
         String deviceName = mLocalBluetoothAdapter.getName();
         writeDeviceNamePin(deviceName, mPin);
 
 
     }
 
+    private void initRecyclerView() {
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(linearLayoutManager);
+        mCachedDevicesAdapter = new CachedDevicesAdapter(R.layout.device_list_item, mDeviceList);
+        mRecyclerView.setAdapter(mCachedDevicesAdapter);
+        mCachedDevicesAdapter.setOnItemClickListener(this);
+
+    }
+
 
     private void initView() {
         mSwitchBluetooth = (SwitchCompat) findViewById(R.id.switch_bluetooth);
+        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
 
     }
 
@@ -226,5 +245,11 @@ public class MainActivity extends Activity implements BluetoothCallback {
         Timber.i("deviceName: " + deviceName);
         SPUtils.putString(mContext, "DEVICE_NAME", deviceName);
         SPUtils.putString(mContext, "PIN", pin);
+    }
+
+
+    @Override
+    public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+
     }
 }

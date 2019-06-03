@@ -5,28 +5,105 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/color_bluetooth_bg"
+
     tools:context=".MainActivity">
+    <!-- android:background="@drawable/bt_background"-->
+    <RelativeLayout
+        android:id="@+id/ll_switch_bluetooth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="56dp"
+        android:layout_marginRight="56dp"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
+        <TextView
 
-    <android.support.v7.widget.SwitchCompat
-        android:id="@+id/switch_bluetooth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="蓝牙开关"
+            android:textColor="@color/white"
+            android:textSize="18dp"/>
+
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/switch_bluetooth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:checked="false"/>
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="56dp"
+        android:layout_marginRight="56dp"
+        android:background="@color/white"
+        app:layout_constraintBottom_toTopOf="@id/ll_bluetooth_san"
+        app:layout_constraintLeft_toRightOf="parent"/>
+
+    <RelativeLayout
+        android:id="@+id/ll_bluetooth_san"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="56dp"
+        android:layout_marginRight="56dp"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_switch_bluetooth">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="扫        描"
+            android:textColor="@color/white"
+            android:textSize="18dp"/>
+
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/switch_bluetooth_san"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+
+            android:checked="true"/>
+
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="56dp"
+        android:layout_marginRight="56dp"
+        android:background="@color/white"
+        app:layout_constraintBottom_toTopOf="@id/tv_device_list"
+        app:layout_constraintLeft_toRightOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_device_list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="蓝牙开关"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginLeft="16dp"
+        android:layout_marginLeft="56dp"
         android:layout_marginTop="16dp"
-        android:checked="false"/>
-    <android.support.v7.widget.SwitchCompat
-        android:id="@+id/switch_bluetooth_san"
-        android:layout_width="wrap_content"
+        android:textColor="@color/white"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_bluetooth_san"
+        android:textSize="18dp"
+        android:text="设备列表"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="扫        描"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/switch_bluetooth"
-        android:layout_marginLeft="16dp"
+        android:layout_marginLeft="56dp"
+        android:layout_marginRight="56dp"
         android:layout_marginTop="16dp"
-        android:checked="true"/>
+        app:layout_constraintTop_toBottomOf="@id/tv_device_list"
+        app:layout_constraintLeft_toLeftOf="parent"/>
 
 </android.support.constraint.ConstraintLayout>
