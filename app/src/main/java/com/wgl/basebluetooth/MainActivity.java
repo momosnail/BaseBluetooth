@@ -15,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.mediatek.bluetooth.BluetoothProfileManager;
@@ -250,6 +251,6 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
 
     @Override
     public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-
+        Toast.makeText(mContext,"点击了item"+position,Toast.LENGTH_SHORT).show();
     }
 }

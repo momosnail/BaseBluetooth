@@ -20,6 +20,6 @@ public class CachedDevicesAdapter extends BaseQuickAdapter<CachedBluetoothDevice
     @Override
     protected void convert(BaseViewHolder helper, CachedBluetoothDevice item) {
         helper.setText(R.id.tv_item_remote_device_name,item.getDevice().getName());
-        helper.setText(R.id.tv_item_remote_connect_status, item.getDevice().getBondState()+"");
+        helper.setText(R.id.tv_item_remote_connect_status, item.getConnectedState());
     }
 }

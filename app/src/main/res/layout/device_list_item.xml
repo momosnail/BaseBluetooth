@@ -3,15 +3,16 @@
               android:id="@+id/device_item"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
-              android:descendantFocusability="beforeDescendants"
+              android:background="@drawable/switch_bg"
               android:orientation="vertical"
               android:paddingBottom="1dp">
-
+<!-- android:descendantFocusability="beforeDescendants"-->
     <TextView
         android:id="@+id/tv_item_remote_device_name"
         android:layout_marginTop="3dp"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+
         android:textColor="#FFFFFFFF"
         android:textSize="18dp"/>
 
@@ -19,6 +20,7 @@
         android:id="@+id/tv_item_remote_connect_status"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+
         android:textColor="@color/white"
         android:textSize="16dp"/>
 
