@@ -19,6 +19,10 @@ import com.wgl.basebluetooth.common.CachedBluetoothDevice;
 import com.wgl.basebluetooth.common.LocalBluetoothAdapter;
 import com.wgl.basebluetooth.common.LocalBluetoothManager;
 import com.wgl.basebluetooth.common.LocalBluetoothProfileManager;
+import com.wgl.basebluetooth.util.SPUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import timber.log.Timber;
 
@@ -28,7 +32,11 @@ public class MainActivity extends Activity implements BluetoothCallback {
     private Context mContext;
     private boolean mOpenBluetooth = false;
     private static final String A2DP_ROLE_CHANGED = "android.bluetooth.a2dp.role_change";
-
+    private LocalBluetoothAdapter mLocalBluetoothAdapter;
+    private IntentFilter mIntentFilter;
+    private LocalBluetoothManager mLocalBluetoothManager;
+    public static String mPin = "123456";
+    private List<CachedBluetoothDevice> mDeviceList;
 
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -55,10 +63,6 @@ public class MainActivity extends Activity implements BluetoothCallback {
 
         }
     };
-    private LocalBluetoothAdapter mLocalBluetoothAdapter;
-    private IntentFilter mIntentFilter;
-    private LocalBluetoothManager mLocalBluetoothManager;
-
 
     private void receiverInit() {
         mIntentFilter = new IntentFilter();
@@ -98,6 +102,22 @@ public class MainActivity extends Activity implements BluetoothCallback {
         mSwitchBluetooth.setOnCheckedChangeListener(mOnCheckedChangeListener);
         checkBluetoothButtonState();
         openBluetooth();
+        mDeviceList = (ArrayList) mLocalBluetoothManager.getCachedDeviceManager().getCachedDevicesCopy();
+        for (int i = 0; i < mDeviceList.size(); i++) {
+            Timber.i("------------------getName: " + mDeviceList.get(i).getDevice().getName());
+            Timber.i("------------------getAddress: " + mDeviceList.get(i).getDevice().getAddress());
+            Timber.i("------------------getAliasName: " + mDeviceList.get(i).getDevice().getAliasName());//别名
+            Timber.i("------------------getAlias: " + mDeviceList.get(i).getDevice().getAlias());//别名
+            Timber.i("------------------getBondState: " + mDeviceList.get(i).getDevice().getBondState());
+            Timber.i("------------------getUuids: " + mDeviceList.get(i).getDevice().getUuids());
+            Timber.i("------------------getType: " + mDeviceList.get(i).getDevice().getType());
+            Timber.i("----------------------------------------------------");
+
+
+        }
+        String deviceName = mLocalBluetoothAdapter.getName();
+        writeDeviceNamePin(deviceName, mPin);
+
 
     }
 
@@ -199,5 +219,12 @@ public class MainActivity extends Activity implements BluetoothCallback {
                 mOpenBluetooth = false;
                 break;
         }
+    }
+
+
+    private void writeDeviceNamePin(String deviceName, String pin) {
+        Timber.i("deviceName: " + deviceName);
+        SPUtils.putString(mContext, "DEVICE_NAME", deviceName);
+        SPUtils.putString(mContext, "PIN", pin);
     }
 }
