@@ -15,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -29,6 +30,7 @@ import com.wgl.basebluetooth.util.SPUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import timber.log.Timber;
 
@@ -42,15 +44,22 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
     private IntentFilter mIntentFilter;
     private LocalBluetoothManager mLocalBluetoothManager;
     public static String mPin = "123456";
-    private List<CachedBluetoothDevice> mDeviceList;
-
+    private List<CachedBluetoothDevice> mDeviceList = new ArrayList<>();
+    private RecyclerView mRecyclerView;
+    private CachedDevicesAdapter mCachedDevicesAdapter;
+    private ProgressBar mProgressBar;
+    private SwitchCompat mSwitchBluetoothScan;
+    private SwitchCompat mSwitchDiscover;
+    private boolean isScaning = false;
+    private boolean mBluetoothIsDiscovery = true;
+    static final int DEFAULT_DISCOVERABLE_TIMEOUT = 0; //NEVER TIME OUT
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String receivedAction = intent.getAction();
             Timber.d("receivedAction: " + receivedAction);
             if (receivedAction.equals(BluetoothProfileManager.ACTION_PROFILE_STATE_UPDATE)) {
-
+                mCachedDevicesAdapter.setNewData(mDeviceList);
             } else if (receivedAction.equals(BluetoothDevice.ACTION_PAIRING_REQUEST)) {
 
             } else if (receivedAction.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
@@ -62,6 +71,12 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
             } else if (receivedAction.equals(BluetoothAdapter.ACTION_LOCAL_NAME_CHANGED)) {
 
             } else if (receivedAction.equals(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)) {
+                int mode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE,// 请求当前扫描模式。可能的值有SCAN_MODE_NONE， SCAN_MODE_CONNECTABLE， SCAN_MODE_CONNECTABLE_DISCOVERABLE，
+                        BluetoothAdapter.ERROR);
+                Timber.i("mode =" + mode);
+                if (mode != BluetoothAdapter.ERROR) {//BluetoothAdapter类的保护值 保证不等于此类的其他任何整数常量，为方便需要转发错误值的函数提供
+                    handleModeChanged(mode);
+                }
 
             } else if (receivedAction.equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)) {
 
@@ -69,8 +84,6 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
 
         }
     };
-    private RecyclerView mRecyclerView;
-    private CachedDevicesAdapter mCachedDevicesAdapter;
 
     private void receiverInit() {
         mIntentFilter = new IntentFilter();
@@ -85,6 +98,7 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
         mIntentFilter.addAction(LocalBluetoothProfileManager.ACTION_PROFILE_UPDATE);
         mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
         mIntentFilter.addAction(A2DP_ROLE_CHANGED);
+        this.registerReceiver(mReceiver, mIntentFilter);
     }
 
     @Override
@@ -94,7 +108,6 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
         mContext = this;
         receiverInit();
         bluetoothInit();
-        this.registerReceiver(mReceiver, mIntentFilter);
         initView();
         initData();
     }
@@ -106,32 +119,23 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
     }
 
     private void initData() {
-
-        mSwitchBluetooth.setOnCheckedChangeListener(mOnCheckedChangeListener);
+        initOnclick();
         checkBluetoothButtonState();
         openBluetooth();
-        mDeviceList = (ArrayList) mLocalBluetoothManager.getCachedDeviceManager().getCachedDevicesCopy();
-        for (int i = 0; i < mDeviceList.size(); i++) {
-            Timber.i("------------------getName: " + mDeviceList.get(i).getDevice().getName());
-            Timber.i("------------------getAddress: " + mDeviceList.get(i).getDevice().getAddress());
-            Timber.i("------------------getAliasName: " + mDeviceList.get(i).getDevice().getAliasName());//别名
-            Timber.i("------------------getAlias: " + mDeviceList.get(i).getDevice().getAlias());//别名
-            Timber.i("------------------getBondState: " + mDeviceList.get(i).getDevice().getBondState());
-            Timber.i("------------------getUuids: " + mDeviceList.get(i).getDevice().getUuids());
-            Timber.i("------------------getType: " + mDeviceList.get(i).getDevice().getType());
-            Timber.i("----------------------------------------------------");
-
-
-        }
         initRecyclerView();
-
         String deviceName = mLocalBluetoothAdapter.getName();
         writeDeviceNamePin(deviceName, mPin);
 
+    }
 
+    private void initOnclick() {
+        mSwitchBluetooth.setOnCheckedChangeListener(mOnCheckedChangeListener);
+        mSwitchBluetoothScan.setOnCheckedChangeListener(mOnCheckedChangeListener);
+        mSwitchDiscover.setOnCheckedChangeListener(mOnCheckedChangeListener);
     }
 
     private void initRecyclerView() {
+        mDeviceList = (ArrayList) mLocalBluetoothManager.getCachedDeviceManager().getCachedDevicesCopy();
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(linearLayoutManager);
         mCachedDevicesAdapter = new CachedDevicesAdapter(R.layout.device_list_item, mDeviceList);
@@ -143,7 +147,10 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
 
     private void initView() {
         mSwitchBluetooth = (SwitchCompat) findViewById(R.id.switch_bluetooth);
+        mSwitchDiscover = (SwitchCompat) findViewById(R.id.switch_discover);
+        mSwitchBluetoothScan = (SwitchCompat) findViewById(R.id.switch_bluetooth_san);
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
     }
 
@@ -152,30 +159,83 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
             Timber.i("isChecked: " + isChecked);
-            if (isChecked) {
-                mOpenBluetooth = true;
+            switch (buttonView.getId()) {
+                case R.id.switch_bluetooth:
+                    if (isChecked) {
+                        mOpenBluetooth = true;
 
-                mLocalBluetoothAdapter.setBluetoothEnabled(true);
-            } else {
-                mOpenBluetooth = false;
-                mLocalBluetoothAdapter.setBluetoothEnabled(false);
+                        mLocalBluetoothAdapter.setBluetoothEnabled(true);
+                    } else {
+                        mOpenBluetooth = false;
+                        mLocalBluetoothAdapter.cancelDiscovery();
+                        mLocalBluetoothAdapter.setBluetoothEnabled(false);
+
+                        mProgressBar.setVisibility(View.GONE);
+
+                    }
+                    break;
+                case R.id.switch_bluetooth_san:
+                    if (isChecked) {
+                        scanDevice(false);
+                    } else {
+                        scanDevice(true);
+                    }
+                    break;
+                case R.id.switch_discover:
+                    bluetoothDiscoverability();
+                    break;
 
             }
+
             Timber.i("bluetoothState: " + mLocalBluetoothAdapter.getBluetoothState());
 
         }
     };
 
+
+    private void bluetoothDiscoverability() {
+        if (!mBluetoothIsDiscovery) {
+            int timeout = DEFAULT_DISCOVERABLE_TIMEOUT;
+
+            if (mLocalBluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE,//表示本地蓝牙适配器上启用了查询扫描和页面扫描。因此，该设备既可被发现，又可从远程蓝牙设备连接。
+                    timeout)) {
+                setDiscoveryModeStatus(true);
+
+
+                Timber.i("setScanMode : true");
+            } else {
+                setDiscoveryModeStatus(false);
+
+                Timber.i("setScanMode : false 1");
+            }
+
+        } else {
+            mLocalBluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE);//表示已禁用查询扫描，但在本地蓝牙适配器上启用了页面扫描。因此，远程蓝牙设备无法发现此设备，但可以从之前发现此设备的远程设备进行连接。
+            setDiscoveryModeStatus(false);
+            Timber.i("setScanMode : false 2");
+        }
+    }
+
+
     @Override
     public void onBluetoothStateChanged(int bluetoothState) {
         checkBluetoothButtonState();
         handleStateChanged(bluetoothState);
+        refreshDataList();
     }
 
 
     @Override
     public void onScanningStateChanged(boolean started) {
+        Timber.i("onScanningStateChanged-started:" + started);
+        if (started) {
+                mProgressBar.setVisibility(View.VISIBLE);
 
+        } else {
+            mProgressBar.setVisibility(View.GONE);
+            mSwitchBluetoothScan.setChecked(false);
+        }
+        isScaning = started;
     }
 
     @Override
@@ -195,8 +255,23 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
 
     @Override
     protected void onResume() {
+        if (mLocalBluetoothManager != null && mLocalBluetoothAdapter != null) refreshDataList();
         super.onResume();
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mLocalBluetoothManager == null) return;
+        if (mLocalBluetoothAdapter.isDiscovering()) scanDevice(true);
+
+    }
+
+    @Override
+    protected void onStop() {
+        scanDevice(true);
+        super.onStop();
     }
 
     private void openBluetooth() {
@@ -211,12 +286,40 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
             mOpenBluetooth = true;
             mSwitchBluetooth.setChecked(true);
             mSwitchBluetooth.setEnabled(true);
+            mSwitchDiscover.setEnabled(true);
+            mSwitchBluetoothScan.setEnabled(true);
 
         } else {
             mOpenBluetooth = false;
             mSwitchBluetooth.setChecked(false);
             mSwitchBluetooth.setEnabled(false);
+            mSwitchDiscover.setEnabled(false);
+            mSwitchBluetoothScan.setEnabled(false);
         }
+
+        int scanMode = mLocalBluetoothAdapter.getScanMode();
+        handleModeChanged(scanMode);
+    }
+
+    private void handleModeChanged(int scanMode) {
+        Timber.i("handleModeChanged---scanMode:"+scanMode);
+        if (scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {//表示本地蓝牙适配器上启用了查询扫描和页面扫描。因此，该设备既可被发现，又可从远程蓝牙设备连接。
+            setDiscoveryModeStatus(true);
+        } else {
+            setDiscoveryModeStatus(false);
+        }
+    }
+
+    private void setDiscoveryModeStatus(boolean isDiscoveryable) {
+        mBluetoothIsDiscovery = isDiscoveryable;
+        Timber.i("isDiscoveryable ==" + isDiscoveryable);
+        mSwitchDiscover.setChecked(isDiscoveryable);
+        if (isDiscoveryable) {
+            mSwitchDiscover.setText("可被发现");
+        } else {
+            mSwitchDiscover.setText("不可发现");
+        }
+
     }
 
     private void handleStateChanged(int state) {
@@ -229,10 +332,13 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
             case BluetoothAdapter.STATE_ON:
                 mSwitchBluetooth.setEnabled(true);
                 mOpenBluetooth = true;
+                scanDevice(false);//开启就扫描
                 break;
             case BluetoothAdapter.STATE_TURNING_OFF:
                 mSwitchBluetooth.setEnabled(false);
                 mOpenBluetooth = true;
+                mDeviceList.clear();
+                mCachedDevicesAdapter.setNewData(mDeviceList);
                 break;
             case BluetoothAdapter.STATE_OFF:
                 mSwitchBluetooth.setEnabled(true);
@@ -251,6 +357,50 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
 
     @Override
     public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-        Toast.makeText(mContext,"点击了item"+position,Toast.LENGTH_SHORT).show();
+        scanDevice(true);
+        mSwitchBluetoothScan.setChecked(false);
+        Toast.makeText(mContext, "点击了item" + position, Toast.LENGTH_SHORT).show();
+    }
+
+
+    private void scanDevice(final boolean enable) {
+        Timber.i("scanDevice enable ==" + enable);
+        if (enable) {
+            // Stops scanning after a pre-defined scan period.
+            mLocalBluetoothAdapter.stopScanning();
+            mProgressBar.setVisibility(View.GONE);
+        } else {
+            if (mDeviceList != null)
+                mDeviceList.clear();
+            mLocalBluetoothManager.getCachedDeviceManager().clearNonBondedDevices(); //清除没有配对的设备
+            refreshDataList();
+            mLocalBluetoothAdapter.startScanning(true);
+            mSwitchBluetoothScan.setChecked(true);
+        }
+    }
+
+
+    private void refreshDataList() {
+        if (!mOpenBluetooth) {
+            mCachedDevicesAdapter.setNewData(mDeviceList);
+            return;
+        }
+        if (mDeviceList.isEmpty() || mDeviceList.size() <= 0) {
+            Set<BluetoothDevice> pairedDevices = mLocalBluetoothManager.getBluetoothAdapter()
+                    .getBondedDevices();
+            Timber.i("pairedDevices size = " + pairedDevices.size());
+
+            if (!pairedDevices.isEmpty() && pairedDevices.size() > 0) {
+                for (BluetoothDevice device : pairedDevices) {
+                    if (mLocalBluetoothManager.getCachedDeviceManager().findDevice(device) == null) {
+                        mLocalBluetoothManager.getCachedDeviceManager().addDevice(
+                                mLocalBluetoothAdapter, mLocalBluetoothManager.getProfileManager(), device);
+                    }
+
+                }
+            }
+            mDeviceList = (ArrayList) mLocalBluetoothManager.getCachedDeviceManager().getCachedDevicesCopy();
+        }
+        mCachedDevicesAdapter.setNewData(mDeviceList);
     }
 }

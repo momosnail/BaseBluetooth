@@ -38,6 +38,33 @@
         app:layout_constraintLeft_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/switch_bluetooth"/>
 
+    <android.support.v7.widget.SwitchCompat
+        android:id="@+id/switch_discover"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="56dp"
+        android:layout_marginRight="56dp"
+        android:background="@drawable/switch_bg"
+        android:checked="false"
+        android:orientation="horizontal"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp"
+        android:scrollbarThumbHorizontal="@color/colorPrimary"
+        android:shadowColor="@color/colorAccent"
+        android:text="可被发现"
+        android:textColor="@color/white"
+        android:textSize="18dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/switch_bluetooth"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginLeft="56dp"
+        android:layout_marginRight="56dp"
+        android:background="@color/white"
+        app:layout_constraintLeft_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/switch_discover"/>
 
     <android.support.v7.widget.SwitchCompat
         android:id="@+id/switch_bluetooth_san"
@@ -47,14 +74,14 @@
         android:layout_marginLeft="56dp"
         android:layout_marginRight="56dp"
         android:background="@drawable/switch_bg"
-        android:checked="true"
+        android:checked="false"
         android:paddingBottom="8dp"
         android:paddingTop="8dp"
         android:text="扫        描"
         android:textColor="@color/white"
         android:textSize="18dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/switch_bluetooth"/>
+        app:layout_constraintTop_toBottomOf="@id/switch_discover"/>
 
 
     <TextView
@@ -89,5 +116,18 @@
         android:focusableInTouchMode="true"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_device_list"/>
+
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="56dp"
+        android:layout_marginRight="56dp"
+        android:layout_marginTop="16dp"
+        android:focusableInTouchMode="true"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/recyclerView"
+        android:visibility="gone"/>
 
 </android.support.constraint.ConstraintLayout>

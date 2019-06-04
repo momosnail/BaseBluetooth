@@ -26,6 +26,8 @@ import com.wgl.basebluetooth.util.Utils;
 
 import java.util.Set;
 
+import timber.log.Timber;
+
 //import com.mtk.bluetooth.util.Utils;
 
 /**
@@ -81,6 +83,8 @@ public final class LocalBluetoothAdapter {
     // Pass-through BluetoothAdapter methods that we can intercept if necessary
 
     public void cancelDiscovery() {
+        Timber.i("mAdapter.cancelDiscovery()----"+mAdapter.cancelDiscovery());
+        Log.i("LocalBluetoothAdapter","LocalBluetoothAdapter-------"+mAdapter.cancelDiscovery());
         mAdapter.cancelDiscovery();
     }
 
