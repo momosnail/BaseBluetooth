@@ -7,9 +7,11 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadsetClient;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
@@ -27,12 +29,15 @@ import com.wgl.basebluetooth.common.LocalBluetoothAdapter;
 import com.wgl.basebluetooth.common.LocalBluetoothManager;
 import com.wgl.basebluetooth.common.LocalBluetoothProfileManager;
 import com.wgl.basebluetooth.util.SPUtils;
+import com.wgl.basebluetooth.util.ToastUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
 import timber.log.Timber;
+
 
 public class MainActivity extends Activity implements BluetoothCallback, BaseQuickAdapter.OnItemClickListener {
     private SwitchCompat mSwitchBluetooth;
@@ -53,6 +58,12 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
     private boolean isScaning = false;
     private boolean mBluetoothIsDiscovery = true;
     static final int DEFAULT_DISCOVERABLE_TIMEOUT = 0; //NEVER TIME OUT
+
+    private String[] arr1 = {"Pair", "Connect", "Return"};
+    private String[] arr2 = {"unPair", "Connect", "Return"};
+    private String[] arr3 = {"unPair", "disConnect", "Return"};
+    private String[] arr = arr1;
+    private ArrayList<HashMap<String, Object>> mOperationsList;
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -243,11 +254,10 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
     @Override
     public void onDeviceAdded(CachedBluetoothDevice cachedDevice) {
         Timber.i("onDeviceAdded-cachedDevice:" + cachedDevice);
-        if(!mDeviceList.contains(cachedDevice)){
+        if (!mDeviceList.contains(cachedDevice)) {
             mDeviceList.add(cachedDevice);
             mCachedDevicesAdapter.setNewData(mDeviceList);
-//            mCachedDevicesAdapter.notifyDataSetChanged();
-        }else{
+        } else {
             Timber.i("onDeviceAdded contains");
 
         }
@@ -257,11 +267,18 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
     @Override
     public void onDeviceDeleted(CachedBluetoothDevice cachedDevice) {
         Timber.i("onDeviceDeleted-cachedDevice:" + cachedDevice);
+        for (int i = mDeviceList.size() - 1; i >= 0; i--) {
+            if (cachedDevice.getDevice().getAddress().equals(mDeviceList.get(i).getDevice().getAddress())) {
+                mDeviceList.remove(i);
+            }
+        }
+        mCachedDevicesAdapter.setNewData(mDeviceList);
     }
 
     @Override
     public void onDeviceBondStateChanged(CachedBluetoothDevice cachedDevice, int bondState) {
         Timber.i("onDeviceBondStateChanged-cachedDevice:" + cachedDevice + " bondState:" + bondState);
+        mCachedDevicesAdapter.setNewData(mDeviceList);
 
     }
 
@@ -289,6 +306,14 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
     private void openBluetooth() {
         if (!mLocalBluetoothManager.getBluetoothAdapter().isEnabled()) {
             mLocalBluetoothManager.getBluetoothAdapter().setBluetoothEnabled(true);
+            scanDevice(false);
+        } else {
+            if (!mLocalBluetoothAdapter.isDiscovering()) {
+                scanDevice(false);
+            } else {
+                mSwitchBluetoothScan.setChecked(true);
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -368,9 +393,60 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
 
     @Override
     public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-        scanDevice(true);
-        mSwitchBluetoothScan.setChecked(false);
+
         Toast.makeText(mContext, "点击了item" + position, Toast.LENGTH_SHORT).show();
+        CachedBluetoothDevice mDeviceInfo = mDeviceList.get(position);
+        invokePairConnectDialog(mDeviceInfo);
+    }
+
+    private void invokePairConnectDialog(CachedBluetoothDevice deviceInfo) {
+        String deviceStatus = getResources().getString(deviceInfo.getConnectedState());
+        mOperationsList = new ArrayList<HashMap<String, Object>>();
+        final String[] mPerationsArr = new String[3];
+        if (mLocalBluetoothManager.getBluetoothAdapter() != null) {
+            if (deviceStatus.equals(this.getResources().getString(R.string.bt_status_paired))) {
+                arr = arr2;
+            } else if (deviceStatus.equals(this.getResources().getString(R.string.bt_status_unpair))) {
+                arr = arr1;
+            } else {
+                arr = arr3;
+            }
+
+            for (int i = 0; i < 3; i++) {
+                HashMap<String, Object> map = new HashMap<String, Object>();
+                String name = "";
+                if (arr[i].equals("unPair")) {
+                    name = this.getString(R.string.dispair_bt_string);
+                } else if (arr[i].equals("Pair")) {
+                    name = this.getString(R.string.trypair_bt_string);
+                } else if (arr[i].equals("disConnect")) {
+                    name = this.getString(R.string.disconnect_bt_string);
+                } else if (arr[i].equals("Connect")) {
+//                    for(int j=0;j<BtPairConnectActivity.mCheckedItems.length;j++){
+//                        BtPairConnectActivity.mCheckedItems[j]=false;
+//                    }
+                    name = this.getString(R.string.connect_bt_string);
+                } else if (arr[i].equals("Return")) {
+                    name = this.getString(R.string.bt_pairconnect_return);
+                }
+                map.put("operations_name", name);
+                mOperationsList.add(map);
+                mPerationsArr[i] = name;
+            }
+        }
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(deviceInfo.getDevice().getName());
+        builder.setItems(mPerationsArr, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                ToastUtils.showShortToast(MainActivity.this, "点击了item" + which + ":" + mPerationsArr[which]);
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
 
@@ -392,6 +468,7 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
 
     private void refreshDataList() {
         if (!mOpenBluetooth) {
+            mDeviceList.clear();
             mCachedDevicesAdapter.setNewData(mDeviceList);
             return;
         }
@@ -413,4 +490,6 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
         }
         mCachedDevicesAdapter.setNewData(mDeviceList);
     }
+
+
 }
