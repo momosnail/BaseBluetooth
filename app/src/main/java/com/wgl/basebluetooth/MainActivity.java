@@ -120,9 +120,9 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
 
     private void initData() {
         initOnclick();
+        initRecyclerView();
         checkBluetoothButtonState();
         openBluetooth();
-        initRecyclerView();
         String deviceName = mLocalBluetoothAdapter.getName();
         writeDeviceNamePin(deviceName, mPin);
 
@@ -219,6 +219,7 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
 
     @Override
     public void onBluetoothStateChanged(int bluetoothState) {
+        Timber.i("onBluetoothStateChanged-bluetoothState:" + bluetoothState);
         checkBluetoothButtonState();
         handleStateChanged(bluetoothState);
         refreshDataList();
@@ -229,7 +230,8 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
     public void onScanningStateChanged(boolean started) {
         Timber.i("onScanningStateChanged-started:" + started);
         if (started) {
-                mProgressBar.setVisibility(View.VISIBLE);
+            mProgressBar.setVisibility(View.VISIBLE);
+            mSwitchBluetoothScan.setChecked(true);
 
         } else {
             mProgressBar.setVisibility(View.GONE);
@@ -240,16 +242,26 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
 
     @Override
     public void onDeviceAdded(CachedBluetoothDevice cachedDevice) {
+        Timber.i("onDeviceAdded-cachedDevice:" + cachedDevice);
+        if(!mDeviceList.contains(cachedDevice)){
+            mDeviceList.add(cachedDevice);
+            mCachedDevicesAdapter.setNewData(mDeviceList);
+//            mCachedDevicesAdapter.notifyDataSetChanged();
+        }else{
+            Timber.i("onDeviceAdded contains");
+
+        }
 
     }
 
     @Override
     public void onDeviceDeleted(CachedBluetoothDevice cachedDevice) {
-
+        Timber.i("onDeviceDeleted-cachedDevice:" + cachedDevice);
     }
 
     @Override
     public void onDeviceBondStateChanged(CachedBluetoothDevice cachedDevice, int bondState) {
+        Timber.i("onDeviceBondStateChanged-cachedDevice:" + cachedDevice + " bondState:" + bondState);
 
     }
 
@@ -302,7 +314,7 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
     }
 
     private void handleModeChanged(int scanMode) {
-        Timber.i("handleModeChanged---scanMode:"+scanMode);
+        Timber.i("handleModeChanged---scanMode:" + scanMode);
         if (scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {//表示本地蓝牙适配器上启用了查询扫描和页面扫描。因此，该设备既可被发现，又可从远程蓝牙设备连接。
             setDiscoveryModeStatus(true);
         } else {
@@ -319,7 +331,6 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
         } else {
             mSwitchDiscover.setText("不可发现");
         }
-
     }
 
     private void handleStateChanged(int state) {
@@ -375,7 +386,6 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
             mLocalBluetoothManager.getCachedDeviceManager().clearNonBondedDevices(); //清除没有配对的设备
             refreshDataList();
             mLocalBluetoothAdapter.startScanning(true);
-            mSwitchBluetoothScan.setChecked(true);
         }
     }
 
