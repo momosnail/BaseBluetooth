@@ -27,9 +27,11 @@ import com.wgl.basebluetooth.common.BluetoothCallback;
 import com.wgl.basebluetooth.common.CachedBluetoothDevice;
 import com.wgl.basebluetooth.common.LocalBluetoothAdapter;
 import com.wgl.basebluetooth.common.LocalBluetoothManager;
+import com.wgl.basebluetooth.common.LocalBluetoothProfile;
 import com.wgl.basebluetooth.common.LocalBluetoothProfileManager;
 import com.wgl.basebluetooth.util.SPUtils;
 import com.wgl.basebluetooth.util.ToastUtils;
+import com.wgl.basebluetooth.util.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,12 +60,18 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
     private boolean isScaning = false;
     private boolean mBluetoothIsDiscovery = true;
     static final int DEFAULT_DISCOVERABLE_TIMEOUT = 0; //NEVER TIME OUT
+    private int mProfileState = 0;
+    private CharSequence[] mConnectItems = {};
+    public static boolean[] mCheckedItems = {false, false, false, false, false, false};
 
     private String[] arr1 = {"Pair", "Connect", "Return"};
     private String[] arr2 = {"unPair", "Connect", "Return"};
     private String[] arr3 = {"unPair", "disConnect", "Return"};
     private String[] arr = arr1;
     private ArrayList<HashMap<String, Object>> mOperationsList;
+    private AlertDialog mConnectAsDialog;
+    private boolean mIsconnect = false;
+
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -82,10 +90,10 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
             } else if (receivedAction.equals(BluetoothAdapter.ACTION_LOCAL_NAME_CHANGED)) {
 
             } else if (receivedAction.equals(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)) {
-                int mode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE,// 请求当前扫描模式。可能的值有SCAN_MODE_NONE， SCAN_MODE_CONNECTABLE， SCAN_MODE_CONNECTABLE_DISCOVERABLE，
+                int mode = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE,
                         BluetoothAdapter.ERROR);
                 Timber.i("mode =" + mode);
-                if (mode != BluetoothAdapter.ERROR) {//BluetoothAdapter类的保护值 保证不等于此类的其他任何整数常量，为方便需要转发错误值的函数提供
+                if (mode != BluetoothAdapter.ERROR) {
                     handleModeChanged(mode);
                 }
 
@@ -95,6 +103,7 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
 
         }
     };
+    private CachedBluetoothDevice mCachedBluetoothDevice;
 
     private void receiverInit() {
         mIntentFilter = new IntentFilter();
@@ -401,6 +410,12 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
 
     private void invokePairConnectDialog(CachedBluetoothDevice deviceInfo) {
         String deviceStatus = getResources().getString(deviceInfo.getConnectedState());
+//        mSelectedDevice = (BluetoothDevice)getIntent().getParcelableExtra("SELECTED_DEVICE");
+//        if (mCachedBluetoothDevice==null){
+//            Timber.d("cachedDevice is null!");
+//            return;
+//        }
+        mCachedBluetoothDevice = deviceInfo;
         mOperationsList = new ArrayList<HashMap<String, Object>>();
         final String[] mPerationsArr = new String[3];
         if (mLocalBluetoothManager.getBluetoothAdapter() != null) {
@@ -422,9 +437,9 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
                 } else if (arr[i].equals("disConnect")) {
                     name = this.getString(R.string.disconnect_bt_string);
                 } else if (arr[i].equals("Connect")) {
-//                    for(int j=0;j<BtPairConnectActivity.mCheckedItems.length;j++){
-//                        BtPairConnectActivity.mCheckedItems[j]=false;
-//                    }
+                    for (int j = 0; j < MainActivity.mCheckedItems.length; j++) {
+                        MainActivity.mCheckedItems[j] = false;
+                    }
                     name = this.getString(R.string.connect_bt_string);
                 } else if (arr[i].equals("Return")) {
                     name = this.getString(R.string.bt_pairconnect_return);
@@ -442,11 +457,117 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 ToastUtils.showShortToast(MainActivity.this, "点击了item" + which + ":" + mPerationsArr[which]);
+                HashMap<String, Object> operationsInfo = mOperationsList.get(which);
+                String operations_name = (String) operationsInfo.get("operations_name");
+                Timber.i("operations_name =" + operations_name);
+                if (operations_name.equals(getString(R.string.trypair_bt_string))) {
+                    if (mLocalBluetoothManager.getBluetoothAdapter().isDiscovering()) {
+                        mLocalBluetoothManager.getBluetoothAdapter().cancelDiscovery();
+                    }
+                    if (mCachedBluetoothDevice != null) {
+                        if (mCachedBluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
+                            ToastUtils.showShortToast(getApplicationContext(), "The Bluetooth device is bonded already");
+                        } else if (mCachedBluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDING) {
+                            ToastUtils.showShortToast(getApplicationContext(), "The Bluetooth device is bonding ,please wait");
+                        } else {
+
+                            if (!mCachedBluetoothDevice.startPairing()) {
+                                Timber.i("createBond Error");
+                            }
+
+                        }
+                    }
+                } else if (operations_name.equals(getString(R.string.dispair_bt_string))) {
+                    if (mLocalBluetoothManager.getBluetoothAdapter().isDiscovering()) {
+                        mLocalBluetoothManager.getBluetoothAdapter().cancelDiscovery();
+                    }
+                    if (mCachedBluetoothDevice != null) {
+                        if (mCachedBluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
+                            mCachedBluetoothDevice.unpair();
+                        } else {
+                            ToastUtils.showShortToast(MainActivity.this, "The Bluetooth device is unbonded already");
+                        }
+                    }
+                } else if (operations_name.equals(getString(R.string.connect_bt_string))) {
+                    if (mCachedBluetoothDevice != null) {
+                        int state = mCachedBluetoothDevice.getBondState();
+                        Timber.i("state ==" + state);
+                        if (state == BluetoothDevice.BOND_BONDED) {
+                            List<String> mProfileList = initBtSettings(mCachedBluetoothDevice, mProfileState, false);
+                            mConnectItems = (CharSequence[]) mProfileList.toArray(new CharSequence[mProfileList.size()]);
+
+                            AlertDialog.Builder protocolDialog = new AlertDialog.Builder(MainActivity.this);
+                            protocolDialog.setTitle(getString(R.string.connect_bt_string));
+                            protocolDialog.setMultiChoiceItems(mConnectItems, mCheckedItems, mMultiClickListener);
+                            protocolDialog.setPositiveButton(getString(android.R.string.ok), mClickListener);
+                            mConnectAsDialog = protocolDialog.create();
+                            mConnectAsDialog.show();
+                        } else {
+
+                            Timber.e("pair Bluetooth first");
+                            ToastUtils.showShortToast(getApplicationContext(), "We will pair Bluetooth device first");
+                            if (!mCachedBluetoothDevice.startPairing()) {
+                                Timber.e("pair Bluetooth device Error");
+                            } else {
+                                mIsconnect = true;
+                            }
+                        }
+
+                    }
+                } else if (operations_name.equals(getString(R.string.disconnect_bt_string))) {
+                    Utils.disconnectBT(MainActivity.this, mCachedBluetoothDevice);
+                    ToastUtils.showShortToast(getApplicationContext(), "Disconnecting Bluetooth device");
+                    for (int i = 0; i < MainActivity.mCheckedItems.length; i++) {
+                        MainActivity.mCheckedItems[i] = false;
+                    }
+                } else if (operations_name.equals(getString(R.string.bt_pairconnect_return))) {
+                    ToastUtils.showShortToast(getApplicationContext(), "Return");
+                } else {
+                    ToastUtils.showShortToast(getApplicationContext(), "Error");
+                }
+
             }
         });
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private final DialogInterface.OnClickListener mClickListener =
+            new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    if (which == DialogInterface.BUTTON_POSITIVE) {
+                        Timber.d("BUTTON_POSITIVE Clicked ");
+
+                    }
+                }
+            };
+
+    private final DialogInterface.OnMultiChoiceClickListener mMultiClickListener = new DialogInterface.OnMultiChoiceClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int which, boolean isChecked) {
+            Timber.d("Item " + which + " changed to " + isChecked);
+            Timber.d("Item [which]= " + mConnectItems[which]);
+
+            if (isChecked) {
+                mCachedBluetoothDevice.connectProfileName(mConnectItems[which].toString());
+                ToastUtils.showShortToast(getApplicationContext(), "Connecting Bluetooth device");
+            } else {
+                mCachedBluetoothDevice.disconnectProfileName(mConnectItems[which].toString());
+                ToastUtils.showShortToast(getApplicationContext(), "Disconnecting Bluetooth device");
+            }
+            mCheckedItems[which] = isChecked;
+        }
+    };
+
+    private List<String> initBtSettings(CachedBluetoothDevice cachedBluetoothDevice, int profileState, boolean b) {
+        int index = 0;
+        List<String> items = new ArrayList<>();
+        Timber.d("mCachedBluetoothDevice =" + mCachedBluetoothDevice + " ,mProfileState=" + mProfileState);
+        for (LocalBluetoothProfile profile : mCachedBluetoothDevice.getConnectableProfiles()) {
+            items.add(getString(profile.getNameResource(mCachedBluetoothDevice.getDevice())));
+        }
+        return items;
     }
 
 

@@ -5,7 +5,7 @@ android {
     defaultConfig {
         applicationId "com.wgl.basebluetooth"
 //        applicationId "com.mtk.bluetooth"
-        minSdkVersion 21
+        minSdkVersion 17
         targetSdkVersion 28
 
         versionCode 1
