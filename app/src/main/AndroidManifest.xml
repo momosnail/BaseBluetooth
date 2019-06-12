@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.wgl.basebluetooth">
+          package="com.futurus.hud.bluetoothphone"
+          >
+    <!--android:sharedUserId="android.uid.system"表示是系统应用
+    com.futurus.hud.bluetoothphone
+      package="com.wgl.basebluetooth"-->
 
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
