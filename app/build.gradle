@@ -3,8 +3,8 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.wgl.basebluetooth"
-//        applicationId "com.mtk.bluetooth"
+        applicationId "com.futurus.hud.bluetoothphone"
+
         minSdkVersion 17
         targetSdkVersion 28
 
@@ -19,6 +19,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+    dexOptions {
+        preDexLibraries = false
     }
 }
 
@@ -55,6 +58,7 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:4.7.1'
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.45'
     implementation 'com.android.support:recyclerview-v7:28.0.0'
+//    implementation 'com.android.support:multidex:1.0.3'
 
 
 }

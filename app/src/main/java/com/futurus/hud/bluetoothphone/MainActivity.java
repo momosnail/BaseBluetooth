@@ -79,7 +79,20 @@ public class MainActivity extends Activity implements BluetoothCallback, BaseQui
             String receivedAction = intent.getAction();
             Timber.d("receivedAction: " + receivedAction);
             if (receivedAction.equals(BluetoothDevice.ACTION_PAIRING_REQUEST)) {
-
+                if (intent.getAction().equals(
+                        "android.bluetooth.device.action.PAIRING_REQUEST")) {
+                    BluetoothDevice mDevice = intent
+                            .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    int passkey = intent.getIntExtra(BluetoothDevice.EXTRA_PAIRING_KEY,
+                            BluetoothDevice.ERROR);
+                    Timber.e("----------------------PAIRING_REQUEST: " + passkey);
+                    mDevice.setPin(BluetoothDevice.convertPinToBytes("" + passkey));
+                    mDevice.setPasskey(passkey);
+                    mDevice.setPairingConfirmation(true);
+                    Timber.e("----------------------配对成功 " );
+                }
+                //停止下发
+                abortBroadcast();
 
             } else if (receivedAction.equals(CachedBluetoothDevice.ACTION_PROFILE_STATE_CHANGED) || receivedAction.equals(LocalBluetoothProfileManager.ACTION_PROFILE_UPDATE)) {
                 int a2dp = mLocalBluetoothAdapter.getConnectionState();
